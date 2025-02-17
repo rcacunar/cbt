@@ -1,22 +1,21 @@
-# Etapa de build: usa Node.js para compilar la aplicación React
+# Etapa de build: usa Node.js y Yarn para compilar la aplicación React
 FROM node:16-alpine as build
 
 WORKDIR /app
 
-# Copia package.json y package-lock.json (o yarn.lock)
-COPY package*.json ./
+# Copia el package.json y yarn.lock
+COPY package.json yarn.lock ./
 
-# Instala las dependencias usando el flag --legacy-peer-deps
-RUN npm install --legacy-peer-deps
+# Instala las dependencias usando Yarn
+RUN yarn install --frozen-lockfile
 
-# Copia el código fuente y compila la aplicación
+# Copia el resto del código fuente y compila la aplicación
 COPY . .
-RUN npm run build
+RUN yarn build
 
-# Etapa final: utiliza Nginx para servir la aplicación compilada
+# Etapa final: usa Nginx para servir la aplicación compilada
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
